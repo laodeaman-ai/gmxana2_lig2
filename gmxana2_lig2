@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# ANALISIS MMPBSA dan MMGBSA
+
+# Membuat folder berdasarkan penggabungan variabel LIG1 dan LIG2
+mkdir "PB_$lig1_id" "PB_$lig2_id" "GB_$lig1_id" "GB_$lig2_id"
+
+# Menyalin file pb.in dan gb.in ke direktori PB_* dan GB_*
+cp pb.in PB_*/
+cp gb.in GB_*/
+
+# Nilai grup untuk GB_$lig1_id dan GB_$lig2_id
+lig1_grup=13
+lig2_grup=14
+
+# Perintah untuk direktori GB_$lig1_id
+gb_command_lig1="mpirun -np 20 gmx_MMPBSA -O -i gb.in -cs ../md.tpr -ci ../index.ndx -cg 1 $lig1_grup -ct ../md.xtc"
+
+# Perintah untuk direktori GB_$lig2_id
+gb_command_lig2="mpirun -np 20 gmx_MMPBSA -O -i gb.in -cs ../md.tpr -ci ../index.ndx -cg 1 $lig2_grup -ct ../md.xtc"
+
+# Perintah untuk direktori PB_$lig1_id
+pb_command_lig1="mpirun -np 20 gmx_MMPBSA -O -i pb.in -cs ../md.tpr -ci ../index.ndx -cg 1 $lig1_grup -ct ../md.xtc"
+
+# Perintah untuk direktori PB_$lig2_id
+pb_command_lig2="mpirun -np 20 gmx_MMPBSA -O -i pb.in -cs ../md.tpr -ci ../index.ndx -cg 1 $lig2_grup -ct ../md.xtc"
+
+# Loop untuk direktori GB_*
+for dir in GB_*; do
+    if [ -d "$dir" ]; then
+        cd "$dir"
+        echo "Running command in directory: $dir"
+        
+        # Menentukan perintah yang akan dijalankan berdasarkan nama direktori
+        if [[ $dir == "GB_$lig1_id" ]]; then
+            eval "$gb_command_lig1"
+        elif [[ $dir == "GB_$lig2_id" ]]; then
+            eval "$gb_command_lig2"
+        fi
+        
+        cd ..
+    fi
+done
+
+# Loop untuk direktori PB_*
+for dir in PB_*; do
+    if [ -d "$dir" ]; then
+        cd "$dir"
+        echo "Running command in directory: $dir"
+        
+        # Menentukan perintah yang akan dijalankan berdasarkan nama direktori
+        if [[ $dir == "PB_$lig1_id" ]]; then
+            eval "$pb_command_lig1"
+        elif [[ $dir == "PB_$lig2_id" ]]; then
+            eval "$pb_command_lig2"
+        fi
+        
+        cd ..
+    fi
+done
